@@ -1,0 +1,82 @@
+{{> _header.html}}
+
+<section class="page-hero about-hero">
+  <div class="container">
+    <h1>ℹ️ O Stronie</h1>
+    <p>Wielkanocna aplikacja Node.js v{{version}}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container about-container">
+
+    <div class="about-grid">
+      <div class="about-card">
+        <h2>🏗️ Architektura</h2>
+        <p>Aplikacja zbudowana od zera w czystym Node.js – bez żadnych zewnętrznych zależności. Własny micro-framework z routingiem, middleware i template engine.</p>
+        <ul class="tech-list">
+          <li>✅ Własny router (params, regex)</li>
+          <li>✅ Middleware stack (logger, security, rate limit)</li>
+          <li>✅ Mini template engine (if, each, partials)</li>
+          <li>✅ REST API z JSON</li>
+          <li>✅ Serwer plików statycznych</li>
+          <li>✅ In-memory game state</li>
+        </ul>
+      </div>
+
+      <div class="about-card">
+        <h2>🗺️ Routing</h2>
+        <ul class="route-list">
+          {{#each routes}}
+          <li>
+            <a href="{{this.path}}" class="route-link">
+              <code>{{this.path}}</code>
+              <span>{{this.desc}}</span>
+            </a>
+          </li>
+          {{/each}}
+          <li><a href="/o-stronie" class="route-link"><code>/o-stronie</code><span>O stronie</span></a></li>
+        </ul>
+        <h3 style="margin-top:20px">API Endpoints</h3>
+        <ul class="route-list">
+          <li><a href="/api/health" target="_blank" class="route-link"><code>GET /api/health</code><span>Status serwera</span></a></li>
+          <li><a href="/api/recipes" target="_blank" class="route-link"><code>GET /api/recipes</code><span>Lista przepisów</span></a></li>
+          <li><a href="/api/eggs" target="_blank" class="route-link"><code>GET /api/eggs</code><span>Lista jajek</span></a></li>
+          <li><a href="/api/stats" target="_blank" class="route-link"><code>GET /api/stats</code><span>Statystyki</span></a></li>
+          <li><a href="/api/quiz" target="_blank" class="route-link"><code>GET /api/quiz</code><span>Pytania quizu</span></a></li>
+          <li><a href="/api/wishes" target="_blank" class="route-link"><code>GET /api/wishes</code><span>Życzenia</span></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Live stats -->
+    <div class="live-stats" id="live-stats">
+      <h2>📊 Statystyki na żywo</h2>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card loading">Ładowanie...</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+async function loadStats() {
+  try {
+    const res = await fetch('/api/stats');
+    const { stats } = await res.json();
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card"><span>${stats.activeSessions}</span><em>Aktywne sesje</em></div>
+      <div class="stat-card"><span>${stats.totalCollections}</span><em>Zebrane jajka</em></div>
+      <div class="stat-card"><span>${stats.totalPoints}</span><em>Suma punktów</em></div>
+      <div class="stat-card"><span>${stats.recipes}</span><em>Przepisów</em></div>
+      <div class="stat-card"><span>${stats.eggs}</span><em>Jajek</em></div>
+      <div class="stat-card"><span>${stats.wishes}</span><em>Życzeń</em></div>
+    `;
+  } catch(e) { document.getElementById('stats-grid').innerHTML = '<div class="stat-card">Błąd ładowania</div>'; }
+}
+loadStats();
+setInterval(loadStats, 10000);
+</script>
+
+{{> _footer.html}}

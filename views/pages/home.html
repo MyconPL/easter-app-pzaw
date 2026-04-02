@@ -1,0 +1,126 @@
+{{> _header.html}}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-scene">
+    <div class="scene-sky"></div>
+    <div class="sun"><div class="sun-core"></div></div>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+    <div class="hill h1"></div>
+    <div class="hill h2"></div>
+    <div class="hill h3"></div>
+    <div class="grass-strip"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-text">
+      <p class="hero-eyebrow">✨ Najpiękniejsze życzenia ✨</p>
+      <h1 class="hero-title">
+        <em>Wesołych</em>
+        <strong>Świąt</strong>
+        <span>Wielkanocnych</span>
+      </h1>
+      <p class="hero-sub">Odkrywaj jajka, gotuj świąteczne dania i sprawdź swoją wiedzę!</p>
+      <div class="hero-cta">
+        <a href="/jajka" class="btn btn-primary">🥚 Poluj na jajka</a>
+        <a href="/przepisy" class="btn btn-ghost">🍳 Przepisy</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><span>{{totalEggs}}</span><em>jajek</em></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><span>{{totalRecipes}}</span><em>przepisów</em></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><span>5</span><em>pytań quiz</em></div>
+      </div>
+    </div>
+    <div class="hero-bunny" id="hero-bunny" title="Kliknij mnie!">
+      <div class="b-ear bl"><div class="b-ei"></div></div>
+      <div class="b-ear br"><div class="b-ei"></div></div>
+      <div class="b-head">
+        <div class="b-eye be-l"><div class="b-pupil"></div></div>
+        <div class="b-eye be-r"><div class="b-pupil"></div></div>
+        <div class="b-nose"></div>
+        <div class="b-mouth"></div>
+      </div>
+      <div class="b-body">
+        <div class="b-belly"></div>
+        <div class="b-arm ba-l"></div>
+        <div class="b-arm ba-r"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating eggs deco -->
+  <div class="float-eggs">
+    <div class="fe fe1"></div>
+    <div class="fe fe2"></div>
+    <div class="fe fe3"></div>
+    <div class="fe fe4"></div>
+  </div>
+</section>
+
+<!-- QUICK NAV CARDS -->
+<section class="section quick-nav">
+  <div class="container">
+    <div class="qnav-grid">
+      <a href="/jajka" class="qnav-card qc-eggs">
+        <div class="qnav-icon">🥚</div>
+        <h3>Polowanie na Jajka</h3>
+        <p>Znajdź {{totalEggs}} ukrytych pisanek i zbierz punkty</p>
+        <span class="qnav-arrow">→</span>
+      </a>
+      <a href="/przepisy" class="qnav-card qc-recipes">
+        <div class="qnav-icon">🍳</div>
+        <h3>Przepisy</h3>
+        <p>{{totalRecipes}} tradycyjnych przepisów wielkanocnych</p>
+        <span class="qnav-arrow">→</span>
+      </a>
+      <a href="/quiz" class="qnav-card qc-quiz">
+        <div class="qnav-icon">🧠</div>
+        <h3>Quiz</h3>
+        <p>Sprawdź swoją wiedzę o Wielkanocy!</p>
+        <span class="qnav-arrow">→</span>
+      </a>
+      <a href="/zyczenia" class="qnav-card qc-wishes">
+        <div class="qnav-icon">💐</div>
+        <h3>Życzenia</h3>
+        <p>Piękne życzenia dla bliskich</p>
+        <span class="qnav-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ŻYCZENIA PREVIEW -->
+<section class="section wishes-preview">
+  <div class="container">
+    <h2 class="section-title">💐 Wielkanocne Życzenia</h2>
+    <div class="wishes-grid">
+      {{#each wishes}}
+      <div class="wish-card" style="animation-delay: {{@index}}00ms">
+        <div class="wish-icon">{{this.icon}}</div>
+        <h3>{{this.title}}</h3>
+        <p>{{this.text}}</p>
+      </div>
+      {{/each}}
+    </div>
+    <div class="section-cta">
+      <a href="/zyczenia" class="btn btn-outline">Zobacz wszystkie życzenia →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="container">
+    <div class="cta-inner">
+      <h2>Gotowy na wielkanocne przygody?</h2>
+      <p>Zacznij od polowania na jajka – znajdź legendarny diament!</p>
+      <a href="/jajka" class="btn btn-white">🥚 Zacznij polowanie</a>
+    </div>
+  </div>
+</section>
+
+{{> _footer.html}}

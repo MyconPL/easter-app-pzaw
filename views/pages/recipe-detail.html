@@ -1,0 +1,83 @@
+{{> _header.html}}
+
+<div class="recipe-detail">
+  <div class="rd-hero">
+    <div class="container">
+      <a href="/przepisy" class="back-link">← Przepisy</a>
+      <div class="rd-header">
+        <div class="rd-emoji">{{recipe.emoji}}</div>
+        <div class="rd-info">
+          <span class="rc-category">{{recipe.category}}</span>
+          <h1>{{recipe.name}}</h1>
+          <p class="rd-desc">{{recipe.desc}}</p>
+          <div class="rd-badges">
+            <span class="badge">⏱ {{recipe.time}}</span>
+            <span class="badge diff-{{recipe.difficulty}}">📊 {{recipe.difficulty}}</span>
+            {{#each recipe.tags}}
+            <span class="tag">{{this}}</span>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container rd-body">
+    <div class="rd-grid">
+
+      <!-- Składniki -->
+      <div class="rd-ingredients">
+        <h2>🛒 Składniki</h2>
+        <ul class="ingredients-list">
+          {{#each recipe.ingredients}}
+          <li>
+            <span class="ing-check" onclick="this.classList.toggle('checked')">☐</span>
+            {{this}}
+          </li>
+          {{/each}}
+        </ul>
+        <button class="btn btn-ghost btn-sm" id="check-all">✓ Zaznacz wszystkie</button>
+      </div>
+
+      <!-- Kroki -->
+      <div class="rd-steps">
+        <h2>👨‍🍳 Przygotowanie</h2>
+        <ol class="steps-list">
+          {{#each recipe.steps}}
+          <li class="step-item" onclick="this.classList.toggle('done')">
+            <span class="step-num">{{@index}}</span>
+            <span class="step-text">{{this}}</span>
+          </li>
+          {{/each}}
+        </ol>
+      </div>
+    </div>
+
+    <!-- Powiązane -->
+    {{#if related.length}}
+    <div class="related-recipes">
+      <h2>🍴 Podobne przepisy</h2>
+      <div class="related-grid">
+        {{#each related}}
+        <a href="/przepisy/{{this.id}}" class="related-card">
+          <span>{{this.emoji}}</span>
+          <div>
+            <strong>{{this.name}}</strong>
+            <small>⏱ {{this.time}}</small>
+          </div>
+          <span class="rc-arrow">→</span>
+        </a>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+</div>
+
+<script>
+document.getElementById('check-all')?.addEventListener('click', () => {
+  document.querySelectorAll('.ing-check').forEach(c => c.classList.add('checked'));
+});
+</script>
+
+{{> _footer.html}}

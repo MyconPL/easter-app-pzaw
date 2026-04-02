@@ -1,0 +1,140 @@
+{{> _header.html}}
+
+<section class="page-hero quiz-hero">
+  <div class="container">
+    <h1>🧠 Quiz Wielkanocny</h1>
+    <p>{{totalQuestions}} pytań – ile wiesz o Wielkanocy?</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container quiz-container">
+
+    <!-- START -->
+    <div class="quiz-screen" id="qs-start">
+      <div class="quiz-card start-card">
+        <div class="quiz-big-emoji">🥚</div>
+        <h2>Gotowy na wielkanocne pytania?</h2>
+        <p>{{totalQuestions}} pytań o tradycjach, historii i smakach Wielkanocy!</p>
+        <button class="btn btn-primary btn-lg" id="start-quiz">Zacznij Quiz →</button>
+      </div>
+    </div>
+
+    <!-- PYTANIE -->
+    <div class="quiz-screen hidden" id="qs-question">
+      <div class="quiz-progress">
+        <div class="qp-bar"><div class="qp-fill" id="qp-fill"></div></div>
+        <span id="qp-label">1 / 5</span>
+      </div>
+      <div class="quiz-card question-card">
+        <div class="q-number" id="q-num">Pytanie 1</div>
+        <h2 id="q-text"></h2>
+        <div class="q-answers" id="q-answers"></div>
+        <div class="q-feedback hidden" id="q-feedback">
+          <div class="feedback-icon" id="fb-icon"></div>
+          <p id="fb-fun"></p>
+          <button class="btn btn-primary" id="next-btn">Następne pytanie →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WYNIK -->
+    <div class="quiz-screen hidden" id="qs-result">
+      <div class="quiz-card result-card">
+        <div class="result-emoji" id="res-emoji"></div>
+        <h2 id="res-title"></h2>
+        <div class="result-score" id="res-score"></div>
+        <p id="res-msg"></p>
+        <button class="btn btn-primary btn-lg" id="restart-quiz">🔄 Zagraj ponownie</button>
+        <a href="/przepisy" class="btn btn-ghost">🍳 Sprawdź przepisy</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+let questions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+
+const $ = id => document.getElementById(id);
+const show = id => { $('qs-start').classList.add('hidden'); $('qs-question').classList.add('hidden'); $('qs-result').classList.add('hidden'); $(id).classList.remove('hidden'); };
+
+$('start-quiz').addEventListener('click', async () => {
+  const res = await fetch('/api/quiz');
+  const data = await res.json();
+  questions = data.questions;
+  current = 0; score = 0;
+  show('qs-question');
+  renderQuestion();
+});
+
+function renderQuestion() {
+  const q = questions[current];
+  $('q-num').textContent = 'Pytanie ' + (current+1);
+  $('q-text').textContent = q.q;
+  $('qp-fill').style.width = ((current/questions.length)*100) + '%';
+  $('qp-label').textContent = (current+1) + ' / ' + questions.length;
+  $('q-feedback').classList.add('hidden');
+  answered = false;
+
+  const container = $('q-answers');
+  container.innerHTML = '';
+  q.answers.forEach((a, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = a;
+    btn.onclick = () => selectAnswer(i, btn);
+    container.appendChild(btn);
+  });
+}
+
+async function selectAnswer(idx, btn) {
+  if (answered) return;
+  answered = true;
+
+  const res = await fetch('/api/quiz/check', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ questionIdx: current, answer: idx }),
+  });
+  const data = await res.json();
+
+  document.querySelectorAll('.answer-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (i === data.correctAnswer) b.classList.add('correct');
+    if (i === idx && !data.correct) b.classList.add('wrong');
+  });
+
+  if (data.correct) score++;
+  $('fb-icon').textContent = data.correct ? '✅' : '❌';
+  $('fb-fun').textContent = data.fun;
+  $('q-feedback').classList.remove('hidden');
+}
+
+$('next-btn').addEventListener('click', () => {
+  current++;
+  if (current >= questions.length) showResult();
+  else renderQuestion();
+});
+
+function showResult() {
+  show('qs-result');
+  $('qp-fill').style.width = '100%';
+  const pct = score / questions.length;
+  const emojis = ['😢','😐','🙂','😊','🏆'];
+  const msgs   = ['Spróbuj ponownie!','Nieźle, jest nad czym popracować!','Dobry wynik!','Świetnie! Znasz się na Wielkanocy!','MISTRZ WIELKANOCNY! Niesamowite!'];
+  $('res-emoji').textContent = emojis[Math.min(Math.floor(pct*5), 4)];
+  $('res-title').textContent = msgs[Math.min(Math.floor(pct*5), 4)];
+  $('res-score').textContent = score + ' / ' + questions.length;
+  $('res-msg').textContent = 'Zdobyłeś ' + Math.round(pct*100) + '% punktów';
+}
+
+$('restart-quiz').addEventListener('click', () => {
+  show('qs-start');
+});
+</script>
+
+{{> _footer.html}}

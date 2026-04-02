@@ -1,0 +1,68 @@
+{{> _header.html}}
+
+<section class="page-hero wishes-hero">
+  <div class="container">
+    <h1>💐 Wielkanocne Życzenia</h1>
+    <p>Piękne słowa na świąteczny czas</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Generator losowego życzenia -->
+    <div class="wish-generator">
+      <h2>✨ Losowe życzenie</h2>
+      <div class="random-wish-box" id="random-wish">
+        <div class="rw-icon" id="rw-icon">🌸</div>
+        <h3 id="rw-title">Kliknij, by wygenerować</h3>
+        <p id="rw-text">Naciśnij przycisk poniżej</p>
+      </div>
+      <button class="btn btn-primary" id="gen-wish">🎲 Losuj życzenie</button>
+      <button class="btn btn-ghost" id="copy-wish">📋 Kopiuj</button>
+    </div>
+
+    <!-- Wszystkie życzenia -->
+    <h2 class="section-title" style="margin-top:60px">Wszystkie życzenia</h2>
+    <div class="wishes-grid big">
+      {{#each wishes}}
+      <div class="wish-card big" style="animation-delay:{{@index}}80ms">
+        <div class="wish-icon">{{this.icon}}</div>
+        <h3>{{this.title}}</h3>
+        <p>{{this.text}}</p>
+        <button class="btn btn-ghost btn-sm copy-single" data-text="{{this.title}}: {{this.text}}">📋 Kopiuj</button>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<script>
+$id = id => document.getElementById(id);
+
+$id('gen-wish').addEventListener('click', async () => {
+  const res = await fetch('/api/wishes/random');
+  const { data } = await res.json();
+  $id('rw-icon').textContent = data.icon;
+  $id('rw-title').textContent = data.title;
+  $id('rw-text').textContent = data.text;
+  $id('random-wish').classList.add('anim');
+  setTimeout(() => $id('random-wish').classList.remove('anim'), 400);
+});
+
+$id('copy-wish').addEventListener('click', () => {
+  const text = $id('rw-title').textContent + ': ' + $id('rw-text').textContent;
+  navigator.clipboard.writeText(text).then(() => alert('Skopiowano! ✅'));
+});
+
+document.querySelectorAll('.copy-single').forEach(btn => {
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(btn.dataset.text).then(() => {
+      btn.textContent = '✅ Skopiowano!';
+      setTimeout(() => btn.textContent = '📋 Kopiuj', 2000);
+    });
+  });
+});
+</script>
+
+{{> _footer.html}}

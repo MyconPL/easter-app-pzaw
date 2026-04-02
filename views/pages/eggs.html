@@ -1,0 +1,238 @@
+{{> _header.html}}
+
+<section class="page-hero eggs-hero">
+  <div class="container">
+    <h1>🥚 Polowanie na Jajka</h1>
+    <p>Klikaj w jajka, zbieraj punkty, odkryj legendarny diament!</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Tablica wyników -->
+    <div class="scoreboard">
+      <div class="score-item">
+        <span class="score-num" id="score-found">0</span>
+        <span class="score-label">Zebrane</span>
+      </div>
+      <div class="score-sep">/</div>
+      <div class="score-item">
+        <span class="score-num">{{eggs.length}}</span>
+        <span class="score-label">Wszystkich</span>
+      </div>
+      <div class="score-sep gold">⭐</div>
+      <div class="score-item">
+        <span class="score-num gold" id="score-points">0</span>
+        <span class="score-label">Punktów</span>
+      </div>
+      <button class="btn btn-sm" id="reset-btn">🔄 Reset</button>
+    </div>
+
+    <!-- Pasek postępu -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      <span class="progress-label" id="progress-label">0 / {{eggs.length}}</span>
+    </div>
+
+    <!-- Legenda rzadkości -->
+    <div class="rarity-legend">
+      <span class="rl common">● Pospolite</span>
+      <span class="rl uncommon">● Rzadkie</span>
+      <span class="rl rare">● Epiczne</span>
+      <span class="rl legendary">● Legendarne</span>
+    </div>
+
+    <!-- Łąka z jajkami -->
+    <div class="egg-field" id="egg-field">
+      <div class="ef-bg"></div>
+      <div class="ef-grass"></div>
+
+      {{#each eggs}}
+      <div class="egg-slot {{this.rarity}}" data-id="{{this.id}}" data-points="{{this.points}}" data-rarity="{{this.rarity}}" data-name="{{this.name}}" data-emoji="{{this.emoji}}" data-surprise="{{this.surprise}}" id="egg-{{this.id}}">
+        <div class="egg-shell ec-{{this.id}}">
+          <div class="egg-shine"></div>
+          <div class="egg-pat ep-{{this.id}}"></div>
+        </div>
+        <div class="egg-shadow"></div>
+        <div class="egg-label">{{this.name}}</div>
+      </div>
+      {{/each}}
+
+    </div>
+
+    <!-- Kolekcja gracza -->
+    <div class="collection-panel">
+      <h3>📦 Twoja kolekcja <span id="coll-count">(0/{{eggs.length}})</span></h3>
+      <div class="collection-grid" id="collection-grid">
+        <p class="coll-empty">Jeszcze nic nie zebrałeś. Kliknij w jajko!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL -->
+<div class="egg-modal" id="egg-modal" aria-hidden="true">
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <div class="modal-box">
+    <div class="modal-emoji" id="m-emoji"></div>
+    <div class="modal-rarity" id="m-rarity"></div>
+    <h2 id="m-title"></h2>
+    <p id="m-surprise"></p>
+    <div class="modal-pts" id="m-pts"></div>
+    <button class="btn btn-primary" id="m-close">✨ Super!</button>
+    <div class="confetti-zone" id="confetti-zone"></div>
+  </div>
+</div>
+
+<!-- VICTORY -->
+<div class="victory" id="victory" aria-hidden="true">
+  <div class="victory-box">
+    <div class="victory-bunny">🏆</div>
+    <h2>Gratulacje!</h2>
+    <p>Zebrałeś wszystkie jajka!</p>
+    <div class="victory-score" id="v-score"></div>
+    <button class="btn btn-primary" id="v-restart">🔄 Zagraj ponownie</button>
+  </div>
+</div>
+
+<script>
+const SESSION_ID = '{{sessionId}}';
+const TOTAL_EGGS = {{eggs.length}};
+let found = [];
+let points = 0;
+
+const $ = id => document.getElementById(id);
+
+// Kliknięcie jajka
+document.querySelectorAll('.egg-slot').forEach(slot => {
+  slot.addEventListener('click', async () => {
+    const id = slot.dataset.id;
+    if (found.includes(id)) return;
+
+    try {
+      const res = await fetch('/api/eggs/collect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eggId: id, sessionId: SESSION_ID }),
+      });
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.alreadyFound) return;
+
+      found.push(id);
+      points = data.game.points;
+
+      // Animacja zebrania
+      slot.classList.add('collected');
+      spawnBurst(slot);
+
+      updateUI();
+      showModal(slot.dataset, data.egg);
+      addToCollection(slot.dataset, data.egg);
+
+      if (data.victory) setTimeout(showVictory, 1800);
+    } catch(e) { console.error(e); }
+  });
+});
+
+function updateUI() {
+  $('score-found').textContent = found.length;
+  $('score-points').textContent = points;
+  const pct = (found.length / TOTAL_EGGS * 100).toFixed(0);
+  $('progress-fill').style.width = pct + '%';
+  $('progress-label').textContent = found.length + ' / ' + TOTAL_EGGS;
+  $('coll-count').textContent = '(' + found.length + '/' + TOTAL_EGGS + ')';
+}
+
+function showModal(d, egg) {
+  $('m-emoji').textContent = egg.emoji;
+  $('m-rarity').textContent = { common:'Pospolite',uncommon:'Rzadkie',rare:'Epiczne',epic:'Epickie',legendary:'LEGENDARNE' }[egg.rarity] || egg.rarity;
+  $('m-rarity').className = 'modal-rarity ' + egg.rarity;
+  $('m-title').textContent = egg.name;
+  $('m-surprise').textContent = egg.surprise;
+  $('m-pts').textContent = '+' + egg.points + ' ⭐';
+  $('egg-modal').classList.add('open');
+  spawnConfetti();
+}
+
+$('m-close').addEventListener('click', () => {
+  $('egg-modal').classList.remove('open');
+  $('confetti-zone').innerHTML = '';
+});
+$('modal-backdrop').addEventListener('click', () => {
+  $('egg-modal').classList.remove('open');
+});
+
+function addToCollection(d, egg) {
+  const empty = document.querySelector('.coll-empty');
+  if (empty) empty.remove();
+  const el = document.createElement('div');
+  el.className = 'coll-egg ' + egg.rarity;
+  el.title = egg.name + ' (+' + egg.points + '⭐)';
+  el.textContent = egg.emoji;
+  $('collection-grid').appendChild(el);
+}
+
+function showVictory() {
+  $('egg-modal').classList.remove('open');
+  $('v-score').textContent = points + ' ⭐ punktów!';
+  $('victory').classList.add('open');
+  // Big confetti
+  for(let i=0;i<60;i++) setTimeout(()=>spawnGlobalParticle(),i*60);
+}
+
+$('v-restart').addEventListener('click', async () => {
+  await fetch('/api/game/' + SESSION_ID + '/reset', { method:'POST' });
+  location.reload();
+});
+
+$('reset-btn').addEventListener('click', async () => {
+  if (!confirm('Zresetować grę?')) return;
+  await fetch('/api/game/' + SESSION_ID + '/reset', { method:'POST' });
+  location.reload();
+});
+
+function spawnBurst(el) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  const ems = ['✨','⭐','🌸','🎉','💫'];
+  for(let i=0;i<8;i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-particle';
+    p.textContent = ems[i%ems.length];
+    const ang = (i/8)*Math.PI*2;
+    const dist = 60+Math.random()*40;
+    p.style.cssText='position:fixed;left:'+cx+'px;top:'+cy+'px;font-size:'+(1+Math.random())+'rem;pointer-events:none;z-index:9999;transition:all 0.8s ease;opacity:1;transform:translate(0,0)';
+    document.body.appendChild(p);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      p.style.transform='translate('+(Math.cos(ang)*dist)+'px,'+(Math.sin(ang)*dist-30)+'px)';
+      p.style.opacity='0';
+    }));
+    setTimeout(()=>p.remove(), 900);
+  }
+}
+
+function spawnConfetti() {
+  const zone = $('confetti-zone');
+  const ems = ['🌸','⭐','🥚','🎉','🌷','✨'];
+  for(let i=0;i<20;i++){
+    const p=document.createElement('div');
+    p.textContent=ems[i%ems.length];
+    p.style.cssText='position:absolute;left:'+Math.random()*100+'%;top:-20px;font-size:'+(0.8+Math.random()*0.8)+'rem;animation:confFall '+(1+Math.random()*1.5)+'s ease '+(Math.random()*0.3)+'s forwards;pointer-events:none';
+    zone.appendChild(p);
+  }
+}
+
+function spawnGlobalParticle(){
+  const ems=['🌸','🥚','🐰','⭐','🌷','🎉','💎'];
+  const p=document.createElement('div');
+  p.textContent=ems[Math.floor(Math.random()*ems.length)];
+  p.style.cssText='position:fixed;left:'+Math.random()*100+'vw;top:-40px;font-size:'+(1+Math.random()*2)+'rem;z-index:9999;pointer-events:none;animation:confFall '+(3+Math.random()*3)+'s linear forwards;opacity:1';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),7000);
+}
+</script>
+
+{{> _footer.html}}

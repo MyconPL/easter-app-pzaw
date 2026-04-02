@@ -1,0 +1,64 @@
+{{> _header.html}}
+
+<section class="page-hero recipes-hero">
+  <div class="container">
+    <h1>🍳 Wielkanocne Przepisy</h1>
+    <p>Tradycyjne smaki na świąteczny stół</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <!-- Filtr + wyszukiwanie -->
+    <div class="recipes-toolbar">
+      <form class="search-form" method="GET" action="/przepisy">
+        <input type="text" name="q" placeholder="Szukaj przepisu..." value="{{searchQuery}}" class="search-input"/>
+        <button type="submit" class="btn btn-primary btn-sm">🔍</button>
+        {{#if searchQuery}}<a href="/przepisy" class="btn btn-ghost btn-sm">✕ Wyczyść</a>{{/if}}
+      </form>
+      <div class="category-tabs">
+        <a href="/przepisy" class="cat-tab {{#if !activeCategory}}active{{/if}}">Wszystkie</a>
+        {{#each categories}}
+        <a href="/przepisy?kategoria={{this}}" class="cat-tab">{{this}}</a>
+        {{/each}}
+      </div>
+    </div>
+
+    <p class="results-count">Znaleziono: <strong>{{count}}</strong> przepisów</p>
+
+    {{#if !count}}
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>Brak wyników</h3>
+      <p>Spróbuj innego zapytania lub <a href="/przepisy">pokaż wszystkie</a>.</p>
+    </div>
+    {{/if}}
+
+    <!-- Siatka przepisów -->
+    <div class="recipes-grid">
+      {{#each recipes}}
+      <a href="/przepisy/{{this.id}}" class="recipe-card" style="animation-delay:{{@index}}50ms">
+        <div class="rc-emoji">{{this.emoji}}</div>
+        <div class="rc-body">
+          <div class="rc-meta">
+            <span class="rc-category">{{this.category}}</span>
+            <span class="rc-time">⏱ {{this.time}}</span>
+            <span class="rc-diff diff-{{this.difficulty}}">{{this.difficulty}}</span>
+          </div>
+          <h3>{{this.name}}</h3>
+          <p>{{this.desc}}</p>
+          <div class="rc-tags">
+            {{#each this.tags}}
+            <span class="tag">{{this}}</span>
+            {{/each}}
+          </div>
+        </div>
+        <div class="rc-arrow">→</div>
+      </a>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+{{> _footer.html}}
